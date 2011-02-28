@@ -73,6 +73,16 @@ test "`tele install`" do
   assert out =~ /tokyo: .*MISSING/
 end
 
+test "`tele run`" do
+  out, err = tele("run", "-d", "test/.tele.simple", "deploy")
+
+  assert out =~ /db-1/
+  assert out =~ /cassandra: .*\?/
+  assert out =~ /cdb: .*\?/
+  assert out =~ /redis: .*OK/
+  assert out =~ /tokyo: .*ERROR/
+end
+
 test "`tele init`" do
   `rm -rf test/tmp`
   `mkdir test/tmp`

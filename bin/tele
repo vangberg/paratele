@@ -155,4 +155,23 @@ Clap.run commands,
 
       puts
     end
+  },
+
+  "run" => lambda {|command|
+    servers.each do |server, assigned_roles|
+      out.server(server)
+
+      recipes_for(assigned_roles).each do |recipe|
+        print "  #{recipe}: "
+
+        case run(server, recipe, command)
+        when nil
+          out.unknown
+        when 0
+          out.ok
+        else
+          out.error
+        end
+      end
+    end
   }
