@@ -1,9 +1,5 @@
 {
-  "roles": {
-    "db": ["redis"]
-  },
-
   "servers": {
-    "db-1": ["db"]
+    "db-1": ["redis", "cassandra"]
   }
 }

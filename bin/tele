@@ -8,26 +8,15 @@ end
 
 require "clap"
 require "json"
-
-def recipes_for(assigned_roles)
-  [].tap do |recipes|
-    assigned_roles.each do |name|
-      if roles[name]
-        recipes.concat(recipes_for(roles[name]))
-      else
-        recipes.push(name)
-      end
-    end
-  end
-end
+require "open3"
 
 def path(*parts)
   File.expand_path(File.join(*parts), ENV["TELE_HOME"])
 end
 
 def ssh(server, script)
-  %x{ssh -T -F #{path("ssh_config")} #{server} < #{script}}
-  $?.exitstatus
+  out, status = Open3.capture2e("ssh -T -F #{path("ssh_config")} #{server} < #{script}")
+  [out, status.exitstatus]
 end
 
 def layout
@@ -36,10 +25,6 @@ end
 
 def servers
   layout["servers"]
-end
-
-def roles
-  layout["roles"]
 end
 
 def recipe_script(recipe, command)
@@ -84,11 +69,19 @@ end
 
 ENV["TELE_HOME"] ||= File.join(Dir.pwd, ".tele")
 
+verbosity = 1
+
 commands = Clap.run ARGV,
   "-h" => lambda {
     exec "less #{help}"
   },
-  "-d" => lambda { |path|
+  "-q" => lambda {
+    verbosity = 0
+  },
+  "-v" => lambda {
+    verbosity = 2
+  },
+  "-d" => lambda {|path|
     ENV["TELE_HOME"] = File.join(Dir.pwd, path)
   }
 
@@ -107,52 +100,41 @@ unless File.directory?(path)
 end
 
 Clap.run commands,
-  "status" => lambda {
-    servers.each do |server, assigned_roles|
-      out.server(server)
-
-      recipes_for(assigned_roles).each do |recipe|
-        print "  #{recipe}: "
-
-        case run(server, recipe, :status)
-        when nil
-          out.unknown
-        when 0
-          out.ok
-        else
-          out.missing
-        end
-      end
-
-      puts
+  "run" => lambda {|command|
+    if commands.size == 3
+      selected = commands.last.split(",")
+      servers.select! {|server| selected.include?(server)}
     end
-  },
 
-  "install" => lambda {
-    servers.each do |server, assigned_roles|
+    exit_status = 0
+
+    servers.each do |server, recipes|
       out.server(server)
 
-      recipes_for(assigned_roles).each do |recipe|
+      recipes.each do |recipe|
         print "  #{recipe}: "
 
-        if run(server, recipe, :status) == 0
-          out.ok
-        else
-          case run(server, recipe, :install)
+        if File.exists?(path("recipes", recipe))
+          stdout, status = run(server, recipe, command)
+
+          case status
           when nil
             out.unknown
           when 0
-            if run(server, recipe, :status) == 0
-              out.done
-            else
-              out.missing
-            end
+            out.ok
+            $stderr.print stdout if verbosity >= 2
           else
             out.error
+            $stderr.print stdout if verbosity >= 1
+            exit_status = 1
+            break
           end
+        else
+          out.unknown
+          exit 1
         end
       end
-
-      puts
     end
+
+    exit exit_status
   }

@@ -20,58 +20,94 @@ prepare do
   `mkdir /tmp/tele`
 end
 
-test "`tele status` without a config" do
-  out, err, status = tele("status")
+test "`tele run` without a config" do
+  out, err, status = tele("run", "install")
 
   assert err =~ /Couldn't find/
   assert_equal 1, status.exitstatus
 end
 
-test "`tele status` with missing recipes" do
-  out, err = tele("status", "-d", "test/.tele.missing-recipes")
+test "`tele run` with missing recipes" do
+  out, err, status = tele("run", "deploy", "-d", "test/.tele.missing-recipes")
 
+  assert_equal 1, status.exitstatus
   assert out =~ /db-1/
   assert out =~ /redis: .*\?/
+  assert out !~ /cassandra: .*\?/
 end
 
-test "`tele status`" do
-  out, err = tele("status", "-d", "test/.tele.simple")
+test "`tele run` successful" do
+  out, err, status = tele("run", "install", "-d", "test/.tele.simple")
 
+  assert_equal 0, status.exitstatus
   assert out =~ /db-1/
+  assert out =~ /db-2/
   assert out =~ /redis: .*OK/
-  assert out =~ /cassandra: .*MISSING/
+  assert out =~ /cdb: .*OK/
+  assert out =~ /cassandra: .*OK/
 end
 
-test "`tele status`" do
-  out, err = tele("status", "-d", "test/.tele")
+test "`tele run` with recipes missing a command" do
+  out, err, status = tele("run", "status", "-d", "test/.tele.simple")
 
-  assert err.empty?
-
-  parts = out.split("\n\n")
-
-  assert parts[0] =~ /app-1/
-  assert parts[0] =~ /redis/
-  assert parts[0] =~ /ruby/
-  assert parts[0] =~ /unicorn/
-
-  assert parts[1] =~ /app-2/
-  assert parts[1] =~ /redis/
-
-  assert parts[2] =~ /app-3/
-  assert parts[2] =~ /redis/
-  assert parts[2] =~ /ruby/
-  assert parts[2] =~ /unicorn/
+  assert_equal 0, status.exitstatus
+  assert out =~ /cassandra: .*\?/
+  assert out =~ /cdb: .*OK/
+  assert out =~ /redis: .*OK/
 end
 
-test "`tele install`" do
-  out, err = tele("install", "-d", "test/.tele.simple")
+test "`tele run` with errors" do
+  out, err, status = tele("run", "update", "-d", "test/.tele.simple")
+
+  assert_equal 1, status.exitstatus
 
   assert out =~ /db-1/
   assert out =~ /cassandra: .*ERROR/
-  assert out =~ /cdb: .*DONE/
+  assert err =~ /Updating Cassandra failed/
+  assert out !~ /cdb:/
+
+  assert out =~ /db-2/
   assert out =~ /redis: .*OK/
-  assert out =~ /tokyo: .*MISSING/
 end
+
+test "`tele run` with specific server" do
+  out, err, status = tele("run", "install", "db-2", "-d", "test/.tele.simple")
+
+  assert_equal 0, status.exitstatus
+  assert out !~ /db-1/
+  assert out !~ /cassandra/
+  assert out !~ /cdb/
+  assert out =~ /db-2/
+  assert out =~ /redis/
+end
+
+test "`tele run` with multiple server" do
+  out, err, status = tele("run", "install", "db-2,db-1", "-d", "test/.tele.simple")
+
+  assert_equal 0, status.exitstatus
+  assert out =~ /db-1/
+  assert out =~ /db-2/
+end
+
+test "`tele run -v`" do
+  out, err, status = tele("run", "update", "-v", "-d", "test/.tele.simple")
+
+  assert err =~ /Redis succesfully updated/
+  assert err =~ /Updating Cassandra failed/
+  assert out !~ /Redis succesfully updated/
+  assert out !~ /Updating Cassandra failed/
+end
+
+test "`tele run -q`" do
+  out, err, status = tele("run", "update", "-q", "-d", "test/.tele.simple")
+
+  assert err !~ /Redis succesfully updated/
+  assert err !~ /Updating Cassandra failed/
+  assert out !~ /Redis succesfully updated/
+  assert out !~ /Updating Cassandra failed/
+end
+
+__END__
 
 test "`tele init`" do
   `rm -rf test/tmp`

@@ -1,1 +1,3 @@
-touch /tmp/tele/cdb
+#!/bin/sh
+
+exit 0
