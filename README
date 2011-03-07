@@ -28,24 +28,12 @@ DESCRIPTION
           The server layout, with the available roles and servers. Example:
 
           {
-            "roles": {
-              "db": ["redis"],
-              "web": ["ruby", "unicorn"],
-              "app": ["db", "web"]
-            },
-
             "servers": {
-              "app-1": ["db", "web"],
-              "app-2": ["db"],
-              "app-3": ["app"]
+              "app-1": ["redis"],
+              "app-2": ["ruby", "unicorn"],
+              "app-3": ["ruby", "resque"]
             }
           }
-
-          The key "roles" stores a tree, where each key is mapped
-          to an array of recipes. The leaves--those elements in the tree that
-          are not present as keys--are the ones that have to be available as
-          bash scripts. In this example, both "redis" and "unicorn" are leaves,
-          while "db", "web" and "app" are recipes composed of other recipes.
 
           The key "servers" stores a map of servers to roles. The keys can be
           either hostnames declared in .tele/ssh_config or IP addresses.
@@ -64,19 +52,23 @@ DESCRIPTION
           configuration files. You can also use the environment variable
           TELE_HOME.
 
+      -v
+          Print output from servers for all roles, whether they succeed or
+          not. The default is to print output from servers only if a recipe
+          fails.
+
+      -q
+          Don't print output from servers locally.
+
       init
           Copies a .tele template to the current directory.
 
-      status
-          Runs every status.sh script on the servers declared in layout.json,
-          and prints the responses. The status.sh script must return 0 if
-          everything is correct, and a value different form zero otherwise.
-          What to check in the script is up to the user.
-
-      install
-          Runs every install.sh script on the servers declared in layout.json,
-          but only if the status.sh returns an error. The exit code must be 0
-          if the installation was successful.
+      run command
+          Runs every <recipe>/<command>.sh script on the servers declared
+          in layout.json, in the specified order. The scripts must have an
+          exit status of 0 on success, otherwise it will be counted as failed.
+          If a recipe fails, no more recipes for that server will be executed.
+          
 
 USAGE
       To provision two servers called `server1` and `server2` with Redis,
@@ -88,21 +80,14 @@ USAGE
           # Create directories for the recipes.
           $ mkdir -p .tele/recipes/redis
 
-          # Create status.sh script.
-          $ echo "which redis-server" > ./tele/recipes/redis/status.sh
-
           # Create install.sh script (ommited).
 
           # Edit .tele/layout.json as follows:
 
             {
-              "roles": {
-                "db": ["redis"]
-              },
-
               "servers": {
-                "server1": ["db"],
-                "server2": ["db"]
+                "server1": ["redis"],
+                "server2": ["redis"]
               }
             }
 
@@ -115,7 +100,7 @@ USAGE
               Hostname 10.0.0.2
 
           # Run tele install
-          $ tele install
+          $ tele run install
 
 INSTALLATION
       $ gem install tele
