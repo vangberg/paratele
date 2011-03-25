@@ -1,10 +1,10 @@
 TELE(1)
 
 NAME
-      tele -- Provisioning at a distance.
+      paratele -- Provisioning at a distance.
 
 SYNOPSIS
-      tele [-h] [-d path] (init|status|install)
+      paratele [-h] [-d path] (init|run)
 
 DESCRIPTION
       Tele is a small provisioning framework that allows you to run bash
@@ -99,8 +99,11 @@ USAGE
             Host server2
               Hostname 10.0.0.2
 
-          # Run tele install
-          $ tele run install
+          # Run the install script for all recipes
+          $ paratele run install
+
+          # Run the deploy script for certain servers
+          $ paratele run deploy web1,db1
 
 INSTALLATION
-      $ gem install tele
+      $ gem install paratele
