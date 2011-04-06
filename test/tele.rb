@@ -8,7 +8,7 @@ def root(*args)
 end
 
 def tele(*args)
-  sh("ruby #{root "bin/tele"} #{Shellwords.join args}")
+  sh("ruby #{root "bin/paratele"} #{Shellwords.join args}")
 end
 
 def sh(cmd)
