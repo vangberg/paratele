@@ -21,10 +21,12 @@ prepare do
 end
 
 test "`tele run` without a config" do
-  out, err, status = tele("run", "install")
+  Dir.chdir("test") {
+    out, err, status = tele("run", "install")
 
-  assert err =~ /Couldn't find/
-  assert_equal 1, status.exitstatus
+    assert err =~ /Couldn't find/
+    assert_equal 1, status.exitstatus
+  }
 end
 
 test "`tele run` with missing recipes" do

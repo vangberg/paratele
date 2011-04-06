@@ -67,7 +67,7 @@ end
 
 ###
 
-ENV["TELE_HOME"] ||= File.join(Dir.pwd, ".tele")
+ENV["TELE_HOME"] ||= Dir.pwd
 
 verbosity = 1
 
@@ -85,8 +85,8 @@ commands = Clap.run ARGV,
     ENV["TELE_HOME"] = File.join(Dir.pwd, path)
   }
 
-unless File.directory?(path)
-  $stderr.puts "Couldn't find a .tele directory"
+unless File.exists?(File.join(path, "layout.json"))
+  $stderr.puts "Couldn't find `layout.json`"
   exit 1
 end
 
