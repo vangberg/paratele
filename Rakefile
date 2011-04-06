@@ -1,7 +1,12 @@
+task :default => :test
+
 task :test do
   require "cutest"
-
   Cutest.run(Dir["test/tele.rb"])
 end
 
-task :default => :test
+namespace :gem do
+  task :build do
+    `erb paratele.gemspec.erb > paratele.gemspec && gem build paratele.gemspec`
+  end
+end

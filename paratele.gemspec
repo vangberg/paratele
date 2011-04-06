@@ -1,15 +1,15 @@
 Gem::Specification.new do |s|
   s.name              = "paratele"
-  s.version           = "0.0.1"
+  s.version           = "0.0.5"
   s.summary           = "Provisioning at a distance"
   s.description       = "Tele is a small provisioning framework that allows you to run bash scripts on remote servers over SSH."
-  s.authors           = ["Damian Janowski", "Michel Martens"]
-  s.email             = ["djanowski@dimaion.com", "michel@soveran.com"]
-  s.homepage          = "http://github.com/djanowski/tele"
+  s.authors           = ["Damian Janowski", "Michel Martens", "Harry Vangberg"]
+  s.email             = ["djanowski@dimaion.com", "michel@soveran.com", "harry@vangberg.name"]
+  s.homepage          = "http://github.com/vangberg/paratele"
 
-  s.executables.push("tele")
+  s.executables.push("paratele")
 
   s.add_dependency("clap")
 
-  s.files = ["LICENSE", "README", "Rakefile", "bin/tele", "templates/.tele/layout.json", "templates/.tele/ssh_config", "paratele.gemspec", "tele.gemspec", "test/tele.rb"]
+  s.files = ["LICENSE", "README", "Rakefile", "bin/paratele", "paratele.gemspec", "test/tele.missing-recipes", "test/tele.rb", "test/tele.simple"]
 end
