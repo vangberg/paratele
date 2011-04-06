@@ -28,7 +28,7 @@ test "`tele run` without a config" do
 end
 
 test "`tele run` with missing recipes" do
-  out, err, status = tele("run", "deploy", "-d", "test/.tele.missing-recipes")
+  out, err, status = tele("run", "deploy", "-d", "test/tele.missing-recipes")
 
   assert_equal 1, status.exitstatus
   assert out =~ /db-1/
@@ -37,7 +37,7 @@ test "`tele run` with missing recipes" do
 end
 
 test "`tele run` successful" do
-  out, err, status = tele("run", "install", "-d", "test/.tele.simple")
+  out, err, status = tele("run", "install", "-d", "test/tele.simple")
 
   assert_equal 0, status.exitstatus
   assert out =~ /db-1/
@@ -48,7 +48,7 @@ test "`tele run` successful" do
 end
 
 test "`tele run` with recipes missing a command" do
-  out, err, status = tele("run", "status", "-d", "test/.tele.simple")
+  out, err, status = tele("run", "status", "-d", "test/tele.simple")
 
   assert_equal 0, status.exitstatus
   assert out =~ /cassandra: .*\?/
@@ -57,7 +57,7 @@ test "`tele run` with recipes missing a command" do
 end
 
 test "`tele run` with errors" do
-  out, err, status = tele("run", "update", "-d", "test/.tele.simple")
+  out, err, status = tele("run", "update", "-d", "test/tele.simple")
 
   assert_equal 1, status.exitstatus
 
@@ -71,7 +71,7 @@ test "`tele run` with errors" do
 end
 
 test "`tele run` with specific server" do
-  out, err, status = tele("run", "install", "db-2", "-d", "test/.tele.simple")
+  out, err, status = tele("run", "install", "db-2", "-d", "test/tele.simple")
 
   assert_equal 0, status.exitstatus
   assert out !~ /db-1/
@@ -82,7 +82,7 @@ test "`tele run` with specific server" do
 end
 
 test "`tele run` with multiple server" do
-  out, err, status = tele("run", "install", "db-2,db-1", "-d", "test/.tele.simple")
+  out, err, status = tele("run", "install", "db-2,db-1", "-d", "test/tele.simple")
 
   assert_equal 0, status.exitstatus
   assert out =~ /db-1/
@@ -90,7 +90,7 @@ test "`tele run` with multiple server" do
 end
 
 test "`tele run -v`" do
-  out, err, status = tele("run", "update", "-v", "-d", "test/.tele.simple")
+  out, err, status = tele("run", "update", "-v", "-d", "test/tele.simple")
 
   assert err =~ /Redis succesfully updated/
   assert err =~ /Updating Cassandra failed/
@@ -99,7 +99,7 @@ test "`tele run -v`" do
 end
 
 test "`tele run -q`" do
-  out, err, status = tele("run", "update", "-q", "-d", "test/.tele.simple")
+  out, err, status = tele("run", "update", "-q", "-d", "test/tele.simple")
 
   assert err !~ /Redis succesfully updated/
   assert err !~ /Updating Cassandra failed/
