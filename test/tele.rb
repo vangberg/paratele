@@ -7,7 +7,7 @@ def root(*args)
   File.join(ROOT, *args)
 end
 
-def tele(*args)
+def paratele(*args)
   sh("ruby #{root "bin/paratele"} #{Shellwords.join args}")
 end
 
@@ -15,17 +15,17 @@ def sh(cmd)
   Open3.capture3(cmd)
 end
 
-test "`tele run` without a config" do
+test "`paratele run` without a config" do
   Dir.chdir("test") {
-    out, err, status = tele("run", "install")
+    out, err, status = paratele("run", "install")
 
     assert err =~ /Couldn't find/
     assert_equal 1, status.exitstatus
   }
 end
 
-test "`tele run` with missing recipes" do
-  out, err, status = tele("run", "deploy", "-d", "test/tele.missing-recipes")
+test "`paratele run` with missing recipes" do
+  out, err, status = paratele("run", "deploy", "-d", "test/tele.missing-recipes")
 
   assert_equal 1, status.exitstatus
   assert out =~ /db-1/
@@ -33,8 +33,8 @@ test "`tele run` with missing recipes" do
   assert out !~ /cassandra: .*\?/
 end
 
-test "`tele run` successful" do
-  out, err, status = tele("run", "install", "-d", "test/tele.simple")
+test "`paratele run` successful" do
+  out, err, status = paratele("run", "install", "-d", "test/tele.simple")
 
   assert_equal 0, status.exitstatus
   assert out =~ /db-1/
@@ -44,8 +44,8 @@ test "`tele run` successful" do
   assert out =~ /cassandra: .*OK/
 end
 
-test "`tele run` with recipes missing a command" do
-  out, err, status = tele("run", "status", "-d", "test/tele.simple")
+test "`paratele run` with recipes missing a command" do
+  out, err, status = paratele("run", "status", "-d", "test/tele.simple")
 
   assert_equal 0, status.exitstatus
   assert out =~ /cassandra: .*\?/
@@ -53,8 +53,8 @@ test "`tele run` with recipes missing a command" do
   assert out =~ /redis: .*OK/
 end
 
-test "`tele run` with errors" do
-  out, err, status = tele("run", "update", "-d", "test/tele.simple")
+test "`paratele run` with errors" do
+  out, err, status = paratele("run", "update", "-d", "test/tele.simple")
 
   assert_equal 1, status.exitstatus
 
@@ -67,8 +67,8 @@ test "`tele run` with errors" do
   assert out =~ /redis: .*OK/
 end
 
-test "`tele run` with specific server" do
-  out, err, status = tele("run", "install", "db-2", "-d", "test/tele.simple")
+test "`paratele run` with specific server" do
+  out, err, status = paratele("run", "install", "db-2", "-d", "test/tele.simple")
 
   assert_equal 0, status.exitstatus
   assert out !~ /db-1/
@@ -78,16 +78,16 @@ test "`tele run` with specific server" do
   assert out =~ /redis/
 end
 
-test "`tele run` with multiple server" do
-  out, err, status = tele("run", "install", "db-2,db-1", "-d", "test/tele.simple")
+test "`paratele run` with multiple server" do
+  out, err, status = paratele("run", "install", "db-2,db-1", "-d", "test/tele.simple")
 
   assert_equal 0, status.exitstatus
   assert out =~ /db-1/
   assert out =~ /db-2/
 end
 
-test "`tele run -v`" do
-  out, err, status = tele("run", "update", "-v", "-d", "test/tele.simple")
+test "`paratele run -v`" do
+  out, err, status = paratele("run", "update", "-v", "-d", "test/tele.simple")
 
   assert err =~ /Redis succesfully updated/
   assert err =~ /Updating Cassandra failed/
@@ -95,8 +95,8 @@ test "`tele run -v`" do
   assert out !~ /Updating Cassandra failed/
 end
 
-test "`tele run -q`" do
-  out, err, status = tele("run", "update", "-q", "-d", "test/tele.simple")
+test "`paratele run -q`" do
+  out, err, status = paratele("run", "update", "-q", "-d", "test/tele.simple")
 
   assert err !~ /Redis succesfully updated/
   assert err !~ /Updating Cassandra failed/
