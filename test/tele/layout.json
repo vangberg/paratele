@@ -1,6 +1,8 @@
 {
-  "servers": {
-    "db-1": ["cassandra", "redis", "cdb"],
-    "db-2": ["cassandra"]
+  "production": {
+    "servers": {
+      "db-1": ["cassandra", "redis", "cdb"],
+      "db-2": ["cassandra"]
+    }
   }
 }

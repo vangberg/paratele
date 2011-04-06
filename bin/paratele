@@ -20,11 +20,7 @@ def ssh(server, script)
 end
 
 def layout
-  $layout ||= JSON.parse(File.read(path("layout.json")))
-end
-
-def servers
-  layout["servers"]
+  @layout ||= JSON.parse(File.read(path("layout.json")))
 end
 
 def recipe_script(recipe, command)
@@ -90,42 +86,43 @@ unless File.exists?(File.join(path, "layout.json"))
   exit 1
 end
 
-Clap.run commands,
-  "run" => lambda {|command|
-    if commands.size == 3
-      selected = commands.last.split(",")
-      servers.select! {|server| selected.include?(server)}
-    end
+case ARGV.shift
+when "run" then
+  command = ARGV.shift
+  environment, servers = ARGV.shift.split(":")
+  servers = servers ? servers.split(",") : layout[environment]["servers"].keys
 
-    exit_status = 0
+  exit_status = 0
 
-    servers.each do |server, recipes|
-      out.server(server)
+  servers.each do |server|
+    recipes = layout[environment]["servers"][server]
 
-      recipes.each do |recipe|
-        print "  #{recipe}: "
+    out.server(server)
 
-        if File.exists?(path("recipes", recipe))
-          stdout, status = run(server, recipe, command)
+    recipes.each do |recipe|
+      print "  #{recipe}: "
 
-          case status
-          when nil
-            out.unknown
-          when 0
-            out.ok
-            $stderr.print stdout if verbosity >= 2
-          else
-            out.error
-            $stderr.print stdout if verbosity >= 1
-            exit_status = 1
-            break
-          end
-        else
+      if File.exists?(path("recipes", recipe))
+        stdout, status = run(server, recipe, command)
+
+        case status
+        when nil
           out.unknown
-          exit 1
+        when 0
+          out.ok
+          $stderr.print stdout if verbosity >= 2
+        else
+          out.error
+          $stderr.print stdout if verbosity >= 1
+          exit_status = 1
+          break
         end
+      else
+        out.unknown
+        exit 1
       end
     end
+  end
 
-    exit exit_status
-  }
+  exit exit_status
+end

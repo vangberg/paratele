@@ -2,3 +2,5 @@ Host db-1
   Hostname localhost
 Host db-2
   Hostname localhost
+Host sta1
+  Hostname localhost

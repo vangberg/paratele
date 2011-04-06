@@ -17,7 +17,7 @@ end
 
 test "`paratele run` without a config" do
   Dir.chdir("test") {
-    out, err, status = paratele("run", "install")
+    out, err, status = paratele("run", "install", "production")
 
     assert err =~ /Couldn't find/
     assert_equal 1, status.exitstatus
@@ -25,7 +25,7 @@ test "`paratele run` without a config" do
 end
 
 test "`paratele run` with missing recipes" do
-  out, err, status = paratele("run", "deploy", "-d", "test/tele.missing-recipes")
+  out, err, status = paratele("run", "deploy", "production", "-d", "test/tele.missing-recipes")
 
   assert_equal 1, status.exitstatus
   assert out =~ /db-1/
@@ -33,8 +33,8 @@ test "`paratele run` with missing recipes" do
   assert out !~ /cassandra: .*\?/
 end
 
-test "`paratele run` successful" do
-  out, err, status = paratele("run", "install", "-d", "test/tele.simple")
+test "`paratele run` successful - production" do
+  out, err, status = paratele("run", "install", "production", "-d", "test/tele.simple")
 
   assert_equal 0, status.exitstatus
   assert out =~ /db-1/
@@ -42,10 +42,25 @@ test "`paratele run` successful" do
   assert out =~ /redis: .*OK/
   assert out =~ /cdb: .*OK/
   assert out =~ /cassandra: .*OK/
+
+  assert out !~ /sta-1/
+end
+
+test "`paratele run` successful - staging" do
+  out, err, status = paratele("run", "install", "staging", "-d", "test/tele.simple")
+
+  assert_equal 0, status.exitstatus
+  assert out =~ /sta1/
+  assert out =~ /redis: .*OK/
+
+  assert out !~ /db-1/
+  assert out !~ /db-2/
+  assert out !~ /cdb:/
+  assert out !~ /cassandra:/
 end
 
 test "`paratele run` with recipes missing a command" do
-  out, err, status = paratele("run", "status", "-d", "test/tele.simple")
+  out, err, status = paratele("run", "status", "production", "-d", "test/tele.simple")
 
   assert_equal 0, status.exitstatus
   assert out =~ /cassandra: .*\?/
@@ -54,7 +69,7 @@ test "`paratele run` with recipes missing a command" do
 end
 
 test "`paratele run` with errors" do
-  out, err, status = paratele("run", "update", "-d", "test/tele.simple")
+  out, err, status = paratele("run", "update", "production", "-d", "test/tele.simple")
 
   assert_equal 1, status.exitstatus
 
@@ -68,9 +83,10 @@ test "`paratele run` with errors" do
 end
 
 test "`paratele run` with specific server" do
-  out, err, status = paratele("run", "install", "db-2", "-d", "test/tele.simple")
+  out, err, status = paratele("run", "install", "production:db-2", "-d", "test/tele.simple")
 
   assert_equal 0, status.exitstatus
+  assert out !~ /sta-1/
   assert out !~ /db-1/
   assert out !~ /cassandra/
   assert out !~ /cdb/
@@ -79,15 +95,16 @@ test "`paratele run` with specific server" do
 end
 
 test "`paratele run` with multiple server" do
-  out, err, status = paratele("run", "install", "db-2,db-1", "-d", "test/tele.simple")
+  out, err, status = paratele("run", "install", "production:db-2,db-1", "-d", "test/tele.simple")
 
   assert_equal 0, status.exitstatus
+  assert out !~ /sta-1/
   assert out =~ /db-1/
   assert out =~ /db-2/
 end
 
 test "`paratele run -v`" do
-  out, err, status = paratele("run", "update", "-v", "-d", "test/tele.simple")
+  out, err, status = paratele("run", "update", "production", "-v", "-d", "test/tele.simple")
 
   assert err =~ /Redis succesfully updated/
   assert err =~ /Updating Cassandra failed/
@@ -96,7 +113,7 @@ test "`paratele run -v`" do
 end
 
 test "`paratele run -q`" do
-  out, err, status = paratele("run", "update", "-q", "-d", "test/tele.simple")
+  out, err, status = paratele("run", "update", "production", "-q", "-d", "test/tele.simple")
 
   assert err !~ /Redis succesfully updated/
   assert err !~ /Updating Cassandra failed/
