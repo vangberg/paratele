@@ -8,7 +8,7 @@
 
   "staging": {
     "servers": {
-      "sta1": ["redis"]
+      "sta1": ["redis", "erb"]
     }
   }
 }

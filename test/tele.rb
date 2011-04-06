@@ -52,6 +52,7 @@ test "`paratele run` successful - staging" do
   assert_equal 0, status.exitstatus
   assert out =~ /sta1/
   assert out =~ /redis: .*OK/
+  assert out =~ /erb: .*OK/
 
   assert out !~ /db-1/
   assert out !~ /db-2/
