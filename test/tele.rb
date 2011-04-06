@@ -15,11 +15,6 @@ def sh(cmd)
   Open3.capture3(cmd)
 end
 
-prepare do
-  `rm -rf /tmp/tele`
-  `mkdir /tmp/tele`
-end
-
 test "`tele run` without a config" do
   Dir.chdir("test") {
     out, err, status = tele("run", "install")
