@@ -85,15 +85,6 @@ commands = Clap.run ARGV,
     ENV["TELE_HOME"] = File.join(Dir.pwd, path)
   }
 
-Clap.run commands,
-  "init" => lambda {
-    source = File.expand_path("../templates/.tele", File.dirname(__FILE__))
-    target = File.expand_path(Dir.pwd)
-
-    %x{cp -r #{source} #{target}}
-    out.done
-  }
-
 unless File.directory?(path)
   $stderr.puts "Couldn't find a .tele directory"
   exit 1
