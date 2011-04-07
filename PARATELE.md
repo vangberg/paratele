@@ -70,6 +70,6 @@ If any recipe on any server fails, Tele will have an exit status of 1. Otherwise
 
 ## Verbose output
 
-Default: Stdout/stderr from the servers will be printed to the local stderr if a recipe fail.
-Quiet (`-q`): Stdout/stderr from the servers will never be printed locally.
-Verbose (`-v`): Stdout/stderr from the server will always be printed to the local stderr.
+* Default: Stdout/stderr from the servers will be printed to the local stderr if a recipe fail.
+* Quiet (`-q`): Stdout/stderr from the servers will never be printed locally.
+* Verbose (`-v`): Stdout/stderr from the server will always be printed to the local stderr.
