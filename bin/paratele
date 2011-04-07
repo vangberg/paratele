@@ -96,6 +96,7 @@ when "run" then
             else
               environment["servers"].keys
             end
+  attributes = environment["attributes"] || {}
 
   exit_status = 0
 
@@ -108,7 +109,7 @@ when "run" then
       print "  #{recipe}: "
 
       if File.exists?(path("recipes", recipe))
-        stdout, status = run(server, recipe, command, environment["attributes"])
+        stdout, status = run(server, recipe, command, attributes)
 
         case status
         when nil
