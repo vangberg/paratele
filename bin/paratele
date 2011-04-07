@@ -8,6 +8,18 @@ require "erb"
 $verbosity = 1
 $home = Dir.pwd
 
+class Template
+  attr_accessor :attributes
+
+  def initialize source
+    @source = source
+  end
+
+  def render
+    ERB.new(@source).result(binding)
+  end
+end
+
 def path *parts
   File.join($home, *parts)
 end
@@ -16,12 +28,13 @@ def layout
   @layout ||= JSON.parse(File.read(path("layout.json")))
 end
 
-def run server, recipe, command
+def run server, recipe, command, attributes={}
   template_path = path("recipes", recipe, "#{command}.erb")
   if File.exists?(template_path)
-    template = File.read(template_path)
-    script = ERB.new(template).result
-    ssh(server, script)
+    source = File.read(template_path)
+    template = Template.new(source)
+    template.attributes = attributes
+    ssh(server, template.render)
   end
 end
 
@@ -95,7 +108,7 @@ when "run" then
       print "  #{recipe}: "
 
       if File.exists?(path("recipes", recipe))
-        stdout, status = run(server, recipe, command)
+        stdout, status = run(server, recipe, command, environment["attributes"])
 
         case status
         when nil

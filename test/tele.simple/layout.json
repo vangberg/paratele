@@ -9,6 +9,10 @@
   "staging": {
     "servers": {
       "sta1": ["redis", "erb"]
+    },
+
+    "attributes": {
+      "exit_code": 0
     }
   }
 }
