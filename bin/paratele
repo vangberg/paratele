@@ -1,38 +1,47 @@
-#! /usr/bin/env ruby
+#!/usr/bin/env ruby
 
-help = File.expand_path(File.join("..", "README"), File.dirname(__FILE__))
-
-if ARGV.empty?
-  exec "less #{help}"
-end
-
-require "clap"
 require "json"
 require "open3"
+require "clap"
 
-def path(*parts)
-  File.expand_path(File.join(*parts), ENV["TELE_HOME"])
-end
+$verbosity = 1
+$home = Dir.pwd
 
-def ssh(server, script)
-  out, status = Open3.capture2e("ssh -T -F #{path("ssh_config")} #{server} < #{script}")
-  [out, status.exitstatus]
+def path *parts
+  File.join($home, *parts)
 end
 
 def layout
   @layout ||= JSON.parse(File.read(path("layout.json")))
 end
 
-def recipe_script(recipe, command)
-  path("recipes", recipe, "#{command}.sh")
+def run server, recipe, command
+  template_path = path("recipes", recipe, "#{command}.erb")
+  if File.exists?(template_path)
+    template = File.read(template_path)
+    ssh(server, template)
+  end
 end
 
-def run(server, recipe, command)
-  script = recipe_script(recipe, command)
+def ssh server, script
+  out, status = Open3.capture2e("ssh -T -F #{path("ssh_config")} #{server}", :stdin_data => script)
+  [out, status.exitstatus]
+end
 
-  if File.exist?(script)
-    ssh(server, script)
-  end
+commands = Clap.run ARGV,
+  "-q" => lambda {
+    $verbosity = 0
+  },
+  "-v" => lambda {
+    $verbosity = 2
+  },
+  "-d" => lambda {|path|
+    $home = File.join(Dir.pwd, path)
+  }
+
+unless File.exists?(path("layout.json"))
+  $stderr.puts "Couldn't find `layout.json`"
+  exit 1
 end
 
 out = Module.new do
@@ -61,41 +70,22 @@ out = Module.new do
   end
 end
 
-###
-
-ENV["TELE_HOME"] ||= Dir.pwd
-
-verbosity = 1
-
-commands = Clap.run ARGV,
-  "-h" => lambda {
-    exec "less #{help}"
-  },
-  "-q" => lambda {
-    verbosity = 0
-  },
-  "-v" => lambda {
-    verbosity = 2
-  },
-  "-d" => lambda {|path|
-    ENV["TELE_HOME"] = File.join(Dir.pwd, path)
-  }
-
-unless File.exists?(File.join(path, "layout.json"))
-  $stderr.puts "Couldn't find `layout.json`"
-  exit 1
-end
-
 case ARGV.shift
 when "run" then
   command = ARGV.shift
   environment, servers = ARGV.shift.split(":")
-  servers = servers ? servers.split(",") : layout[environment]["servers"].keys
+
+  environment = layout[environment]
+  servers = if servers
+              servers.split(",")
+            else
+              environment["servers"].keys
+            end
 
   exit_status = 0
 
   servers.each do |server|
-    recipes = layout[environment]["servers"][server]
+    recipes = environment["servers"][server]
 
     out.server(server)
 
@@ -110,10 +100,10 @@ when "run" then
           out.unknown
         when 0
           out.ok
-          $stderr.print stdout if verbosity >= 2
+          $stderr.print stdout if $verbosity >= 2
         else
           out.error
-          $stderr.print stdout if verbosity >= 1
+          $stderr.print stdout if $verbosity >= 1
           exit_status = 1
           break
         end
