@@ -10,7 +10,6 @@ The coupling between `install` and `system` only works for a very specific way o
 
 Needless abstraction that hasn't proven useful in production use, and invites complexity (especially because a role can include other roles.) Also, they confuse matters with recipe run order. E.g.:
       
-    
     {
       "roles": {
         "web": ["ruby", "nginx"],
@@ -28,23 +27,24 @@ Will it run `ruby` twice? And if not, When will it run? Before or after `nginx`?
 
 Servers belongs in an environment. E.g.:
 
-  {
-    "production": {
-      "servers": {
-        "db1": ["redis", "cdb"],
-        "web2": ["nginx", "varnish"],
-        "web1": ["nginx", "varnish"]
+    {
+      "production": {
+        "servers": {
+          "db1": ["redis", "cdb"],
+          "web2": ["nginx", "varnish"],
+          "web1": ["nginx", "varnish"]
+        },
+        "attributes": {
+          "branch": "master"
+        }
       },
-      "attributes": {
-        "branch": "master"
-      }
-    },
-    "staging": {
-      "servers": {
-        "sta1": ["nginx", "redis"]
-      },
-      "attributes": {
-        "branch": "staging"
+      "staging": {
+        "servers": {
+          "sta1": ["nginx", "redis"]
+        },
+        "attributes": {
+          "branch": "staging"
+        }
       }
     }
 
