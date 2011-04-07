@@ -19,8 +19,9 @@ end
 def run server, recipe, command
   template_path = path("recipes", recipe, "#{command}.erb")
   if File.exists?(template_path)
-    template = ERB.new(File.read(template_path)).result
-    ssh(server, template)
+    template = File.read(template_path)
+    script = ERB.new(template).result
+    ssh(server, script)
   end
 end
 
