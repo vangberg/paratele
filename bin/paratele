@@ -3,6 +3,7 @@
 require "json"
 require "open3"
 require "clap"
+require "erb"
 
 $verbosity = 1
 $home = Dir.pwd
@@ -18,7 +19,7 @@ end
 def run server, recipe, command
   template_path = path("recipes", recipe, "#{command}.erb")
   if File.exists?(template_path)
-    template = File.read(template_path)
+    template = ERB.new(File.read(template_path)).result
     ssh(server, template)
   end
 end
