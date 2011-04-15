@@ -2,9 +2,6 @@
 
 help = File.expand_path(File.join("..", "README"), File.dirname(__FILE__))
 
-require "clap"
-require "json"
-
 def recipes_for(assigned_roles)
   [].tap do |recipes|
     assigned_roles.each do |name|
